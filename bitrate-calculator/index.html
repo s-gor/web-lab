@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Калькулятор битрейта и размера файла</title>
+  <style>
+    :root{
+      --bg1:#0d1320;
+      --bg2:#151d2f;
+      --panel:rgba(22,28,44,.86);
+      --line:rgba(255,255,255,.10);
+      --text:#eef3f8;
+      --muted:#b7c2d3;
+      --gold:#e8d39a;
+      --gold-soft:rgba(232,211,154,.10);
+      --green-soft:rgba(185,215,157,.10);
+      --blue-soft:rgba(199,215,240,.10);
+      --shadow:0 24px 60px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{
+      font-family: Georgia, "Times New Roman", serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(100,120,180,.18), transparent 28%),
+        radial-gradient(circle at top right, rgba(255,225,160,.12), transparent 22%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      min-height:100vh;
+      line-height:1.55;
+    }
+    .wrap{max-width:1100px;margin:0 auto;padding:28px 16px 50px}
+    .hero,.card{
+      border:1px solid var(--line);
+      border-radius:30px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.04), rgba(255,255,255,.015)),
+        radial-gradient(circle at 80% 20%, rgba(232,211,154,.10), transparent 24%),
+        radial-gradient(circle at 15% 30%, rgba(153,190,130,.08), transparent 26%),
+        var(--panel);
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+    .hero{
+      padding:36px 32px 28px;
+      display:grid;
+      grid-template-columns:1.08fr .92fr;
+      gap:20px;
+      align-items:center;
+      overflow:hidden;
+    }
+    .eyebrow{
+      color:var(--gold);
+      text-transform:uppercase;
+      letter-spacing:.18em;
+      font-size:12px;
+      margin-bottom:10px;
+    }
+    h1{
+      margin:0 0 14px;
+      font-size:clamp(34px,6vw,64px);
+      line-height:1.02;
+      letter-spacing:-.03em;
+      font-weight:700;
+    }
+    .lead{
+      margin:0;
+      font-size:18px;
+      color:var(--muted);
+      max-width:720px;
+    }
+    .disc-wrap{
+      justify-self:end;
+      width:min(100%,420px);
+      aspect-ratio:1/1;
+      position:relative;
+    }
+    .disc{
+      position:absolute;
+      inset:8% 10% 10% 6%;
+      border-radius:50%;
+      background:
+        radial-gradient(circle at 50% 50%, #1b2335 0 5%, #0c111b 5% 8%, #111827 8% 12%, transparent 12%),
+        repeating-radial-gradient(circle at 50% 50%,
+          #0a0d12 0 3px,
+          #131922 3px 5px,
+          #0b0f16 5px 8px,
+          #141b25 8px 10px),
+        radial-gradient(circle at 35% 30%, rgba(255,255,255,.16), transparent 18%),
+        radial-gradient(circle at 70% 72%, rgba(255,255,255,.05), transparent 22%),
+        radial-gradient(circle at center, #11161f 0%, #090c12 68%, #030406 100%);
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,.08) inset,
+        0 24px 50px rgba(0,0,0,.45),
+        0 0 70px rgba(232,211,154,.06);
+      overflow:hidden;
+    }
+    .disc:before{
+      content:"";
+      position:absolute;
+      inset:34%;
+      border-radius:50%;
+      background:
+        radial-gradient(circle at 35% 35%, #fff1cf 0%, #e5ca88 36%, #ae833f 72%, #8a652c 100%);
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,.10) inset,
+        0 0 24px rgba(232,211,154,.10);
+      z-index:2;
+    }
+    .disc:after{
+      content:"";
+      position:absolute;
+      inset:47%;
+      border-radius:50%;
+      background:
+        radial-gradient(circle at 40% 40%, #e8edf6 0%, #c9d2df 45%, #9ba7b9 100%);
+      box-shadow:0 0 0 1px rgba(255,255,255,.10) inset;
+      z-index:3;
+    }
+    .disc-shine{
+      position:absolute;
+      inset:8%;
+      border-radius:50%;
+      background:
+        conic-gradient(from 210deg,
+          transparent 0deg 120deg,
+          rgba(255,255,255,.06) 140deg 165deg,
+          transparent 178deg 360deg);
+      filter:blur(.5px);
+      pointer-events:none;
+      z-index:1;
+    }
+    .disc-hole{
+      position:absolute;
+      inset:49.3%;
+      border-radius:50%;
+      background:#0a0f16;
+      z-index:4;
+      box-shadow:0 0 0 1px rgba(255,255,255,.05);
+    }
+
+    .tonearm-base{
+      position:absolute;
+      width:56px;
+      height:56px;
+      right:4%;
+      top:8%;
+      border-radius:50%;
+      background:radial-gradient(circle at 35% 35%, #9aa6b9 0%, #5d6779 55%, #303846 100%);
+      box-shadow:0 10px 20px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.08);
+      z-index:6;
+    }
+    .tonearm{
+      position:absolute;
+      right:14%;
+      top:16%;
+      width:12px;
+      height:47%;
+      background:linear-gradient(180deg, #c7cfda 0%, #7d8798 48%, #4f5969 100%);
+      border-radius:12px;
+      transform:rotate(32deg);
+      transform-origin:top center;
+      box-shadow:0 8px 20px rgba(0,0,0,.25);
+      z-index:5;
+    }
+    .tonearm:before{
+      content:"";
+      position:absolute;
+      top:-6px;
+      left:50%;
+      transform:translateX(-50%);
+      width:20px;
+      height:20px;
+      border-radius:50%;
+      background:radial-gradient(circle at 35% 35%, #d8e0ea 0%, #7e8899 60%, #4a5566 100%);
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.10);
+    }
+    .tonearm:after{
+      content:"";
+      position:absolute;
+      bottom:-12px;
+      left:50%;
+      transform:translateX(-60%) rotate(-8deg);
+      width:28px;
+      height:14px;
+      border-radius:4px;
+      background:linear-gradient(180deg, #d6b874 0%, #9d7838 100%);
+      box-shadow:0 4px 12px rgba(0,0,0,.25);
+    }
+
+
+    .card{margin-top:22px;padding:24px}
+    .form-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:16px;
+      margin-bottom:22px;
+    }
+    .field{display:flex;flex-direction:column;gap:8px}
+    .field.full{grid-column:1 / -1}
+    label{font-size:14px;color:#dfe6f1}
+    select,input{
+      width:100%;
+      height:56px;
+      padding:0 16px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(12,18,30,.92);
+      color:var(--text);
+      font-size:16px;
+      font-family:inherit;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,.12);
+      appearance:none;
+      -webkit-appearance:none;
+      -moz-appearance:none;
+    }
+    select{
+      background-image:
+        linear-gradient(45deg, transparent 50%, #d9c38c 50%),
+        linear-gradient(135deg, #d9c38c 50%, transparent 50%);
+      background-position:
+        calc(100% - 22px) calc(50% - 3px),
+        calc(100% - 16px) calc(50% - 3px);
+      background-size:6px 6px, 6px 6px;
+      background-repeat:no-repeat;
+      padding-right:40px;
+    }
+    select option{
+      background:#101827;
+      color:#eef3f8;
+    }
+    select:focus,input:focus{
+      outline:none;
+      border-color:rgba(232,211,154,.45);
+      box-shadow:0 0 0 3px rgba(232,211,154,.10);
+    }
+    .result-top{
+      display:flex;
+      justify-content:space-between;
+      gap:18px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+      padding-bottom:18px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      margin-bottom:18px;
+    }
+    .result-top h2{
+      margin:0 0 8px;
+      font-size:32px;
+      line-height:1.08;
+    }
+    .result-top p{
+      margin:0;
+      color:var(--muted);
+      font-size:17px;
+      max-width:760px;
+    }
+    .badge{
+      white-space:nowrap;
+      padding:10px 14px;
+      border-radius:999px;
+      background:var(--gold-soft);
+      color:#f2e3b5;
+      border:1px solid rgba(232,211,154,.24);
+      font-size:14px;
+    }
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:16px;
+    }
+    .stat{
+      border-radius:22px;
+      padding:18px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+    }
+    .stat:nth-child(1){box-shadow:inset 0 0 0 1px rgba(185,215,157,.14)}
+    .stat:nth-child(2){box-shadow:inset 0 0 0 1px rgba(232,211,154,.14)}
+    .stat:nth-child(3){box-shadow:inset 0 0 0 1px rgba(199,215,240,.14)}
+    .stat:nth-child(4){box-shadow:inset 0 0 0 1px rgba(239,207,206,.14)}
+    .stat .k{
+      color:var(--muted);
+      font-size:13px;
+      margin-bottom:8px;
+    }
+    .stat .v{
+      font-size:26px;
+      line-height:1.1;
+      font-weight:700;
+    }
+    .note{
+      margin-top:18px;
+      border-radius:18px;
+      padding:14px 16px;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.08);
+      color:var(--muted);
+      font-size:14px;
+    }
+    @media (max-width: 900px){
+      .hero,.stats,.form-grid{grid-template-columns:1fr}
+      .disc-wrap{justify-self:center;max-width:320px;width:100%}
+    }
+    @media (max-width: 640px){
+      .wrap{padding:14px 10px 30px}
+      .hero,.card{padding:18px}
+      .result-top h2{font-size:26px}
+      h1{font-size:40px}
+      .lead{font-size:16px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div>
+        <div class="eyebrow">Точный рассчет</div>
+        <h1>Битрейт и размер файла</h1>
+        <p class="lead">
+          Выберите формат, длительность и параметры аудио — размер файла пересчитается сразу, без лишних кнопок.
+        </p>
+      </div>
+      <div class="disc-wrap" aria-hidden="true">
+        <div class="disc">
+          <div class="disc-shine"></div>
+          <div class="disc-hole"></div>
+        </div>
+        <div class="tonearm-base"></div>
+        <div class="tonearm"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="form-grid">
+        <div class="field">
+          <label for="codec">Формат</label>
+          <select id="codec">
+            <option value="mp3">MP3</option>
+            <option value="aac">AAC / M4A</option>
+            <option value="wav">WAV / PCM</option>
+            <option value="flac">FLAC</option>
+          </select>
+        </div>
+
+        <div class="field" id="bitrateField">
+          <label for="bitrate">Битрейт</label>
+          <select id="bitrate">
+            <option value="128">128 kbps</option>
+            <option value="192">192 kbps</option>
+            <option value="256">256 kbps</option>
+            <option value="320" selected>320 kbps</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="bitDepth">Bit depth</label>
+          <select id="bitDepth">
+            <option value="16" selected>16-bit</option>
+            <option value="24">24-bit</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="sampleRate">Sample rate</label>
+          <select id="sampleRate">
+            <option value="44100" selected>44.1 kHz</option>
+            <option value="96000">96 kHz</option>
+            <option value="192000">192 kHz</option>
+          </select>
+        </div>
+
+        <div class="field full">
+          <label for="durationMinutes">Длительность, минут</label>
+          <input id="durationMinutes" type="number" min="0" step="0.1" value="3" />
+        </div>
+      </div>
+
+      <div class="result-top">
+        <div>
+          <h2 id="mainResult">≈ 7.20 MB</h2>
+          <p id="resultSub">3 минуты, MP3 320 kbps</p>
+        </div>
+        <div class="badge" id="modeBadge">Расчёт по битрейту</div>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="k">1 минута</div>
+          <div class="v" id="perMinute">2.40 MB</div>
+        </div>
+        <div class="stat">
+          <div class="k">3 минуты</div>
+          <div class="v" id="threeMinutes">7.20 MB</div>
+        </div>
+        <div class="stat">
+          <div class="k">10 треков</div>
+          <div class="v" id="tenTracks">72.00 MB</div>
+        </div>
+        <div class="stat">
+          <div class="k">1 час</div>
+          <div class="v" id="oneHour">144.00 MB</div>
+        </div>
+      </div>
+
+      <div class="note" id="note">
+        Для MP3 / AAC размер считается по выбранному битрейту. Для WAV / PCM это почти точный размер. Для FLAC это реалистичная оценка, потому что итоговый размер зависит от самой музыки.
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const codec = document.getElementById('codec');
+    const bitrate = document.getElementById('bitrate');
+    const bitDepth = document.getElementById('bitDepth');
+    const sampleRate = document.getElementById('sampleRate');
+    const durationMinutes = document.getElementById('durationMinutes');
+    const bitrateField = document.getElementById('bitrateField');
+
+    const mainResult = document.getElementById('mainResult');
+    const resultSub = document.getElementById('resultSub');
+    const modeBadge = document.getElementById('modeBadge');
+    const perMinute = document.getElementById('perMinute');
+    const threeMinutes = document.getElementById('threeMinutes');
+    const tenTracks = document.getElementById('tenTracks');
+    const oneHour = document.getElementById('oneHour');
+    const note = document.getElementById('note');
+
+    function bytesToHuman(bytes){
+      const mb = bytes / (1024 * 1024);
+      if (mb >= 1024) return (mb / 1024).toFixed(2) + ' GB';
+      return mb.toFixed(2) + ' MB';
+    }
+
+    function getWavBytes(minutes, bits, hz){
+      const seconds = minutes * 60;
+      const channels = 2;
+      const bytesPerSecond = hz * (bits / 8) * channels;
+      return bytesPerSecond * seconds;
+    }
+
+    function getLossyBytes(minutes, kbps){
+      const seconds = minutes * 60;
+      return (kbps * 1000 * seconds) / 8;
+    }
+
+    function getFlacBytes(minutes, bits, hz){
+      const wav = getWavBytes(minutes, bits, hz);
+      let ratio = 0.58;
+      if (bits === 16 && hz === 44100) ratio = 0.56;
+      else if (bits === 24 && hz === 44100) ratio = 0.60;
+      else if (bits === 24 && hz === 96000) ratio = 0.55;
+      else if (bits === 24 && hz === 192000) ratio = 0.53;
+      return wav * ratio;
+    }
+
+    function codecLabel(v){
+      if (v === 'mp3') return 'MP3';
+      if (v === 'aac') return 'AAC / M4A';
+      if (v === 'wav') return 'WAV / PCM';
+      return 'FLAC';
+    }
+
+    function updateVisibility(){
+      const isLossy = codec.value === 'mp3' || codec.value === 'aac';
+      bitrateField.style.display = isLossy ? 'flex' : 'none';
+    }
+
+    function calcBytes(minutes){
+      const c = codec.value;
+      const kbps = Number(bitrate.value);
+      const bits = Number(bitDepth.value);
+      const hz = Number(sampleRate.value);
+
+      if (c === 'mp3' || c === 'aac') return getLossyBytes(minutes, kbps);
+      if (c === 'wav') return getWavBytes(minutes, bits, hz);
+      return getFlacBytes(minutes, bits, hz);
+    }
+
+    function calc(){
+      const c = codec.value;
+      const kbps = Number(bitrate.value);
+      const bits = Number(bitDepth.value);
+      const hz = Number(sampleRate.value);
+      const minutes = Math.max(0, Number(durationMinutes.value || 0));
+
+      const bytes = calcBytes(minutes);
+      let desc = '';
+
+      if (c === 'mp3' || c === 'aac') {
+        desc = `${codecLabel(c)} ${kbps} kbps`;
+        modeBadge.textContent = 'Расчёт по битрейту';
+        note.textContent = 'Для MP3 / AAC размер считается по выбранному битрейту.';
+      } else if (c === 'wav') {
+        desc = `WAV / PCM ${bits}-bit / ${(hz/1000).toFixed(hz === 44100 ? 1 : 0)} kHz`;
+        modeBadge.textContent = 'Почти точный размер';
+        note.textContent = 'WAV / PCM — это почти точный размер без сжатия.';
+      } else {
+        desc = `FLAC ${bits}-bit / ${(hz/1000).toFixed(hz === 44100 ? 1 : 0)} kHz`;
+        modeBadge.textContent = 'Оценка для FLAC';
+        note.textContent = 'Для FLAC это реалистичная оценка: точный размер зависит от самой музыки и степени сжатия.';
+      }
+
+      mainResult.textContent = '≈ ' + bytesToHuman(bytes);
+      resultSub.textContent = `${minutes} минуты, ${desc}`;
+      perMinute.textContent = bytesToHuman(calcBytes(1));
+      threeMinutes.textContent = bytesToHuman(calcBytes(3));
+      tenTracks.textContent = bytesToHuman(calcBytes(minutes * 10));
+      oneHour.textContent = bytesToHuman(calcBytes(60));
+    }
+
+    [codec, bitrate, bitDepth, sampleRate, durationMinutes].forEach(el => {
+      el.addEventListener('change', () => { updateVisibility(); calc(); });
+      el.addEventListener('input', () => { updateVisibility(); calc(); });
+    });
+
+    updateVisibility();
+    calc();
+  </script>
+</body>
+</html>
