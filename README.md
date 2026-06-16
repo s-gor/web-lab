@@ -1,8 +1,10 @@
 # Web Lab
 
-A collection of web tools, calculators, tests and mini applications.
+🇬🇧 **English**
 
-The repository is used to store self-contained HTML projects that can be deployed to any web server, VPS, cloud instance or local environment.
+A collection of web tools, calculators, tests and small standalone web applications.
+
+The repository contains ready-to-use HTML projects that can be deployed on any web server, VPS, cloud instance or local environment.
 
 ## Current Projects
 
@@ -10,15 +12,13 @@ The repository is used to store self-contained HTML projects that can be deploye
 
 Audio bitrate and file size calculator.
 
-Path:
+Location:
 
 ```text
 bitrate-calculator/
 ```
 
-## Deployment Example
-
-Download directly to an Nginx web root:
+## Quick Deployment
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/s-gor/web-lab/main/bitrate-calculator/index.html -o /var/www/html/index.html
@@ -39,6 +39,47 @@ wget -O /var/www/html/index.html https://raw.githubusercontent.com/s-gor/web-lab
 * Spectrum Tools
 * Network Utilities
 
-## License
+---
 
-Personal and educational use.
+🇷🇺 **Русский**
+
+Коллекция веб-инструментов, калькуляторов, тестов и небольших автономных веб-приложений.
+
+Репозиторий содержит готовые HTML-проекты, которые можно быстро разместить на любом веб-сервере, VPS, облачном инстансе или локальном компьютере.
+
+## Текущие проекты
+
+### Bitrate Calculator
+
+Калькулятор битрейта и размера аудиофайлов.
+
+Расположение:
+
+```text
+bitrate-calculator/
+```
+
+## Быстрое размещение
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/s-gor/web-lab/main/bitrate-calculator/index.html -o /var/www/html/index.html
+```
+
+или
+
+```bash
+wget -O /var/www/html/index.html https://raw.githubusercontent.com/s-gor/web-lab/main/bitrate-calculator/index.html
+```
+
+## Планируемые проекты
+
+* Конвертер валют
+* ABX Test
+* Калькулятор эквалайзера
+* Аудио-инструменты
+* Анализаторы спектра
+* Сетевые утилиты
+
+## Назначение проекта
+
+Основная цель репозитория — хранение готовых веб-инструментов, которые можно развернуть на сервере одной командой без ручного редактирования файлов.
